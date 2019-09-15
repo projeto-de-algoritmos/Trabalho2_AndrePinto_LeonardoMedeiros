@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <set>
 #include <iostream>
+#include <time.h>
 
 using namespace sf;
 
@@ -51,8 +53,19 @@ public:
 
 Tree *trees[N][M];
 
-int main(int argc, char* argv[]){
+int randomGenerate(int i){ return std::rand()%i; }
 
+int inverse(int dir){
+	if(dir==UP) return DOWN;
+	if(dir==DOWN) return UP;
+	if(dir==LEFT) return RIGHT;
+	if(dir==RIGHT) return LEFT;
+	
+	return -1;
+}
+
+int main(int argc, char* argv[]){
+	srand(time(NULL));
 	if(argc >= 2){
 		try{
 			int s = atoi(argv[1]);
@@ -104,12 +117,20 @@ int main(int argc, char* argv[]){
 		}
 	}
 	
+	bool canPlay=false;
 	
 	Vector2f vhor(22.0, 10.0);
 	Vector2f vver(10.0, 22.0);
 	
 	RectangleShape rhor(vhor);
 	RectangleShape rver(vver);
+	
+	RectangleShape rplayer(rv2f);
+	rplayer.setPosition(2, HEIGHT-12);
+	rplayer.setFillColor(Color(231, 84, 128));
+	int playerx=2, playery=HEIGHT-12;
+	
+	r.setFillColor(Color(255,255,255));
 	
 	std::vector<Edge> edges;
 	
@@ -120,25 +141,95 @@ int main(int argc, char* argv[]){
 		}
 	}
 	
-	random_shuffle(edges.begin(), edges.end());
+	random_shuffle(edges.begin(), edges.end(), randomGenerate);
 	
+	std::set<int> sets[N][M];
 	
 	while(window.isOpen()){
 		Event e;
 		while(window.pollEvent(e)){
 			if(e.type == Event::Closed){
 				window.close();
+			}else if(e.type == Event::KeyPressed and canPlay){
+				switch (e.key.code){
+					case Keyboard::Up :{
+						if(sets[playerx/12][playery/12].find(UP) != sets[playerx/12][playery/12].end()){
+							r.setPosition(playerx, playery);
+							t.draw(r);
+				
+							playery+=12;
+							rplayer.setPosition(playerx, playery);
+							t.draw(rplayer);
+							//canMove=false;
+						}
+						break;
+					}
+					case Keyboard::Down :{
+						if(sets[playerx/12][playery/12].find(DOWN) != sets[playerx/12][playery/12].end()){
+							r.setPosition(playerx, playery);
+							t.draw(r);
+			
+							playery-=12;
+							rplayer.setPosition(playerx, playery);
+							t.draw(rplayer);
+						}
+						break;
+					}
+					case Keyboard::Left :{
+						if(sets[playerx/12][playery/12].find(LEFT) != sets[playerx/12][playery/12].end()){
+							r.setPosition(playerx, playery);
+							t.draw(r);
+			
+							playerx-=12;
+							rplayer.setPosition(playerx, playery);
+							t.draw(rplayer);
+						}
+						break;
+					}
+					case Keyboard::Right :{
+						if(sets[playerx/12][playery/12].find(RIGHT) != sets[playerx/12][playery/12].end()){
+							r.setPosition(playerx, playery);
+							t.draw(r);
+			
+							playerx+=12;
+							rplayer.setPosition(playerx, playery);
+							t.draw(rplayer);
+						}
+						break;
+					}
+					
+					default:{}
+				}
+			}
+			
+			
+		}
+		/*
+
+		if(Keyboard::isKeyPressed(Keyboard::Up)){
+			if(canMove and sets[playerx/12][playery/12].find(UP) != sets[playerx/12][playery/12].end()){
+				r.setPosition(playerx, playery);
+				t.draw(r);
+				
+				playery+=12;
+				rplayer.setPosition(playerx, playery);
+				t.draw(rplayer);
+				canMove=false;
 			}
 		}
-		
+		*/
 		
 		for(int i=0; i<speed; i++){
+			if(canPlay) break;
 			if(edges.size()){
 				auto edge = edges.back(); edges.pop_back();
 				auto tree1 = trees[edge.x][edge.y];
 				auto tree2 = trees[edge.x+dx[edge.direction]][edge.y+dy[edge.direction]];
 				if(!tree1->connected(tree2)){
 					tree1->connect(tree2);
+					
+					sets[edge.x][edge.y].insert(edge.direction);
+					sets[edge.x+dx[edge.direction]][edge.y+dy[edge.direction]].insert(inverse(edge.direction));
 					
 					if(edge.direction==LEFT){
 						rhor.setPosition((2+(edge.x+dx[edge.direction])*12), (2+(edge.y+dy[edge.direction])*12));
@@ -150,7 +241,12 @@ int main(int argc, char* argv[]){
 					}
 				}
 			}else{
-				//canPlay=true;
+				canPlay=true;
+				RectangleShape rpoint(rv2f);
+				rpoint.setPosition(WIDTH-12, 2);
+				rpoint.setFillColor(Color(1, 1, 200));
+				t.draw(rpoint);
+				t.draw(rplayer);
 				break;
 			}
 		}
