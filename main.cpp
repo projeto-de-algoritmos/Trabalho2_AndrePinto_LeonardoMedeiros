@@ -68,7 +68,13 @@ int main(int argc, char* argv[]){
 		}
 	}
 	
+	
 	RenderWindow window(VideoMode(WIDTH, HEIGHT), "A-MAZE-ING GAME");
+	
+	Image icon;
+	icon.loadFromFile("icon.png");
+	window.setIcon(32, 32, icon.getPixelsPtr());
+	
 	auto desktop = VideoMode::getDesktopMode();
 	Vector2i v2i(desktop.width/2 - window.getSize().x/2, desktop.height/2 - window.getSize().y/2);
 	window.setPosition(v2i);
@@ -143,10 +149,12 @@ int main(int argc, char* argv[]){
 						t.draw(rver);
 					}
 				}
+			}else{
+				//canPlay=true;
+				break;
 			}
 		}
-		
-		//sleep(1);
+
 		
 		window.clear();
 		window.draw(sprite);
