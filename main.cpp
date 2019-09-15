@@ -128,6 +128,8 @@ int main(int argc, char* argv[]){
 	RectangleShape rplayer(rv2f);
 	rplayer.setPosition(2, HEIGHT-12);
 	rplayer.setFillColor(Color(231, 84, 128));
+	
+
 	int playerx=2, playery=HEIGHT-12;
 	
 	r.setFillColor(Color(255,255,255));
@@ -145,12 +147,22 @@ int main(int argc, char* argv[]){
 	
 	std::set<int> sets[N][M];
 	
+	Font font;
+	font.loadFromFile("Sansation_Regular.ttf");
+	Text text("YOU LOSE!", font, 35);
+	text.setPosition(WIDTH/2-80, 20);
+	
+	Text text2("YOU WIN!", font, 35);
+	text2.setPosition(WIDTH/2-75, 25);
+	
+	bool win=false;
+	
 	while(window.isOpen()){
 		Event e;
 		while(window.pollEvent(e)){
 			if(e.type == Event::Closed){
 				window.close();
-			}else if(e.type == Event::KeyPressed and canPlay){
+			}else if(e.type == Event::KeyPressed and canPlay	){
 				switch (e.key.code){
 					case Keyboard::Up :{
 						if(sets[playerx/12][playery/12].find(UP) != sets[playerx/12][playery/12].end()){
@@ -204,20 +216,18 @@ int main(int argc, char* argv[]){
 			
 			
 		}
-		/*
-
-		if(Keyboard::isKeyPressed(Keyboard::Up)){
-			if(canMove and sets[playerx/12][playery/12].find(UP) != sets[playerx/12][playery/12].end()){
-				r.setPosition(playerx, playery);
-				t.draw(r);
-				
-				playery+=12;
-				rplayer.setPosition(playerx, playery);
-				t.draw(rplayer);
-				canMove=false;
-			}
+		if(win) continue;
+		
+		if(playerx/12==N-1 and playery/12==0){
+			text2.setFillColor(Color(231, 84, 128));
+			text.setFillColor(Color(1, 1, 200));
+			window.draw(text);
+			window.draw(text2);
+			window.display();
+			canPlay=false;
+			win=true;
+			continue;
 		}
-		*/
 		
 		for(int i=0; i<speed; i++){
 			if(canPlay) break;
@@ -255,6 +265,7 @@ int main(int argc, char* argv[]){
 		window.clear();
 		window.draw(sprite);
 		window.display();
+	
 	}
 
 	return 0;
